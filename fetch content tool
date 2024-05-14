@@ -1,0 +1,49 @@
+openapi: 3.0.2
+info:
+  title: "Fetch Content API"
+  description: "An API that fetches and returns the text content from a specified URL."
+  version: "1.0.0"
+servers: 
+  - url: "https://us-central1-wpp-ogilvy-05ca.cloudfunctions.net"
+
+paths:
+  /web_summary:
+    post:
+      summary: "Fetches content from a specified URL"
+      operationId: "fetchContent"
+      requestBody:
+        description: "URL to fetch content from"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FetchContentRequest'
+      responses:
+        "200":
+          description: "A successful response with extracted content."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchContentResponse'
+        "400":
+          description: "Bad Request - Invalid URL or Malformed Request."
+        "500":
+          description: "Internal Server Error - Error during fetching or processing."
+
+components:
+  schemas:
+    FetchContentRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          description: "The URL from which content should be fetched."
+
+    FetchContentResponse:
+      type: object
+      properties:
+        content:
+          type: string
+          description: "The extracted text content from the webpage."
