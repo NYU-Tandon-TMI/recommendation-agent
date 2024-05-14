@@ -1,0 +1,28 @@
+import httpx
+from bs4 import BeautifulSoup
+from flask import jsonify
+
+def fetch_content(request):
+    # Ensure there is a JSON payload and it contains 'url'
+    request_json = request.get_json(silent=True)
+    if not request_json or 'url' not in request_json:
+        return 'No URL provided or malformed JSON', 400
+    
+    url = request_json['url']
+    # Fetch the webpage content
+    try:
+        response = httpx.get(url)
+        response.raise_for_status()  # Check that the request was successful
+    except httpx.HTTPStatusError as e:
+        return f"HTTP error occurred: {e.response.status_code}", 500
+    except httpx.RequestError:
+        return "Request failed. Check the URL or your network connection.", 500
+
+    # Parse the HTML content using BeautifulSoup
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Extract text from paragraphs
+    paragraphs = soup.find_all('p')
+    text_content = ' '.join(p.get_text() for p in paragraphs)
+
+    return jsonify({"content": text_content})
