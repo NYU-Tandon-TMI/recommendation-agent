@@ -1,0 +1,66 @@
+openapi: 3.0.2
+info:
+  title: "Directions API"
+  description: "An API that provides directions to a restaurant based on the starting location and mode of transport."
+  version: "1.0.0"
+servers: 
+  - url: "https://us-central1-wpp-ogilvy-05ca.cloudfunctions.net"
+
+paths:
+  /direction:  # This matches your Cloud Function endpoint
+    post:
+      summary: "Provides directions to a restaurant"
+      operationId: "getDirections"
+      requestBody:
+        description: "Criteria for fetching directions"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectionsRequest'
+      responses:
+        "200":
+          description: "A successful response with directions."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectionsResponse'
+
+components:
+  schemas:
+    DirectionsRequest:
+      type: object
+      required:
+        - origin
+        - destination
+      properties:
+        origin:
+          type: string
+          description: "Starting location as latitude,longitude or a formatted address."
+        destination:
+          type: string
+          description: "Destination location as latitude,longitude or a formatted address."
+        mode:
+          type: string
+          description: "Travel mode (e.g., 'driving', 'walking', 'bicycling', 'transit')."
+          enum:
+            - driving
+            - walking
+            - bicycling
+            - transit
+    DirectionsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/DirectionStep'
+    DirectionStep:
+      type: object
+      properties:
+        instruction:
+          type: string
+          description: "HTML formatted instruction for this step of the trip."
+        distance:
+          type: string
+          description: "Distance for this step."
+        duration:
+          type: string
+          description: "Expected duration for this step."
