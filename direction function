@@ -1,0 +1,42 @@
+import httpx
+import functions_framework
+
+@functions_framework.http
+def get_directions(request):
+    """HTTP Cloud Function to provide directions to a restaurant.
+    Args:
+        request (flask.Request): The request object.
+    Returns:
+        The response text, or any set of values that can be turned into a
+        Response object using `make_response`.
+    """
+    params = request.get_json()
+    origin = params.get('origin')
+    destination = params.get('destination')
+    mode = params.get('mode', 'driving')  # Default mode is driving
+
+    return provide_directions(origin, destination, mode)
+
+def provide_directions(origin, destination, mode):
+    direction_params = {
+        'origin': origin,
+        'destination': destination,
+        'mode': mode,
+        'key': 'type_your_API_key_here',  
+    }
+    directions_url = "https://maps.googleapis.com/maps/api/directions/json"
+    direction_response = httpx.get(directions_url, params=direction_params)
+    direction_results = direction_response.json().get('routes', [])
+
+    if direction_results:
+        legs = direction_results[0].get('legs', [{}])
+        steps = legs[0].get('steps', [])
+        directions = []
+        for step in steps:
+            directions.append({
+                "instruction": step['html_instructions'],
+                "distance": step['distance']['text'],
+                "duration": step['duration']['text']
+            })
+        return directions
+    return {"error": "No route found"}
